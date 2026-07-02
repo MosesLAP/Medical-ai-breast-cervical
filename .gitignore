@@ -1,0 +1,19 @@
+# Data files (too large)
+data/
+*.zip
+
+# Model files (large)
+models/*.h5
+models/*.pkl
+
+# Jupyter cache
+.ipynb_checkpoints/
+__pycache__/
+
+# Environment
+.env
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
