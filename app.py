@@ -92,7 +92,7 @@ st.markdown('<div class="subtitle">AI-assisted analysis of breast tissue histopa
 # ============================================
 @st.cache_resource
 def load_model():
-    return keras.models.load_model('cancer_cnn_final.h5')
+    return keras.models.load_model('cancer_cnn_final.h5', compile=False)
 
 model = load_model()
 
