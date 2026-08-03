@@ -5,11 +5,13 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from datetime import datetime
+import base64
+import os
 
 st.set_page_config(page_title="Breast Cancer AI Detection System", page_icon="🎗️", layout="wide")
 
 # ============================================
-# DARK THEME STYLING
+# STYLING
 # ============================================
 st.markdown("""
 <style>
@@ -39,19 +41,9 @@ section[data-testid="stSidebar"] {
     padding: 18px 20px;
     margin-bottom: 10px;
 }
-.stat-label {
-    color: #8b93a8;
-    font-size: 0.82rem;
-}
-.stat-value {
-    font-size: 1.7rem;
-    font-weight: 800;
-    color: #ffffff;
-}
-.stat-sub {
-    font-size: 0.78rem;
-    color: #4ade80;
-}
+.stat-label { color: #8b93a8; font-size: 0.82rem; }
+.stat-value { font-size: 1.7rem; font-weight: 800; color: #ffffff; }
+.stat-sub { font-size: 0.78rem; color: #4ade80; }
 .result-card-malignant {
     background: linear-gradient(145deg, #2a1420, #1f1018);
     border-left: 4px solid #f43f5e;
@@ -89,12 +81,48 @@ section[data-testid="stSidebar"] {
     margin-bottom: 8px;
     border-left: 3px solid #565f78;
 }
+.hero-panel {
+    background: linear-gradient(180deg, #1a2236, #0f1420);
+    border: 1px solid #2a3348;
+    border-radius: 14px;
+    padding: 24px;
+    height: 100%;
+    text-align: center;
+}
+.hero-quote {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.3;
+    margin-bottom: 12px;
+}
+.hero-quote-highlight { color: #f43f5e; }
+.hero-subtext {
+    color: #8b93a8;
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+}
+.hero-img {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 10px;
+}
+.hero-icon-fallback {
+    font-size: 4rem;
+    margin: 30px 0;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================
-# SESSION STATE FOR REAL "RECENT PREDICTIONS"
+# HELPERS
 # ============================================
+def get_image_base64(path):
+    if os.path.exists(path):
+        with open(path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
+
 if 'history' not in st.session_state:
     st.session_state.history = []
 
@@ -169,33 +197,54 @@ with st.sidebar:
 # DASHBOARD PAGE
 # ============================================
 if page == "📊 Dashboard":
-    st.markdown('<div class="main-title">Dashboard</div>', unsafe_allow_html=True)
-    st.markdown('<div class="subtitle">Overview of deployed models and real training results</div>', unsafe_allow_html=True)
+    main_col, hero_col = st.columns([3, 1])
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.markdown('<div class="stat-card"><div class="stat-label">Histopathology Accuracy</div><div class="stat-value">80.8%</div><div class="stat-sub">ROC-AUC 0.885</div></div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown('<div class="stat-card"><div class="stat-label">Ultrasound Accuracy</div><div class="stat-value">77.6%</div><div class="stat-sub">ROC-AUC 0.827</div></div>', unsafe_allow_html=True)
-    with col3:
-        st.markdown('<div class="stat-card"><div class="stat-label">Histopathology Training Images</div><div class="stat-value">16,000</div><div class="stat-sub">Real patient patches</div></div>', unsafe_allow_html=True)
-    with col4:
-        st.markdown('<div class="stat-card"><div class="stat-label">Ultrasound Training Images</div><div class="stat-value">2,522</div><div class="stat-sub">BUSI + BUS-BRA datasets</div></div>', unsafe_allow_html=True)
+    with main_col:
+        st.markdown('<div class="main-title">Dashboard</div>', unsafe_allow_html=True)
+        st.markdown('<div class="subtitle">Overview of deployed models and real training results</div>', unsafe_allow_html=True)
 
-    st.markdown("###")
-    st.markdown('<div class="panel"><b>This Session\'s Predictions</b>', unsafe_allow_html=True)
-    if len(st.session_state.history) == 0:
-        st.markdown('<p style="color:#8b93a8;">No predictions made yet this session. Try the Histopathology or Ultrasound Detection tabs.</p>', unsafe_allow_html=True)
-    else:
-        for item in reversed(st.session_state.history[-5:]):
-            color = "#f43f5e" if item['result'] == 'MALIGNANT' else "#4ade80"
-            st.markdown(f"""
-            <div class="session-item">
-            <b>{item['model']}</b> — <span style="color:{color};font-weight:700;">{item['result']}</span>
-            ({item['confidence']:.1f}%) — {item['time']}
-            </div>
-            """, unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.markdown('<div class="stat-card"><div class="stat-label">Histopathology Accuracy</div><div class="stat-value">80.8%</div><div class="stat-sub">ROC-AUC 0.885</div></div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown('<div class="stat-card"><div class="stat-label">Ultrasound Accuracy</div><div class="stat-value">77.6%</div><div class="stat-sub">ROC-AUC 0.827</div></div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown('<div class="stat-card"><div class="stat-label">Histopathology Images</div><div class="stat-value">16,000</div><div class="stat-sub">Real patient patches</div></div>', unsafe_allow_html=True)
+        with col4:
+            st.markdown('<div class="stat-card"><div class="stat-label">Ultrasound Images</div><div class="stat-value">2,522</div><div class="stat-sub">BUSI + BUS-BRA datasets</div></div>', unsafe_allow_html=True)
+
+        st.markdown("###")
+        st.markdown('<div class="panel"><b>This Session\'s Predictions</b>', unsafe_allow_html=True)
+        if len(st.session_state.history) == 0:
+            st.markdown('<p style="color:#8b93a8;">No predictions made yet this session. Try the Histopathology or Ultrasound Detection tabs.</p>', unsafe_allow_html=True)
+        else:
+            for item in reversed(st.session_state.history[-5:]):
+                color = "#f43f5e" if item['result'] == 'MALIGNANT' else "#4ade80"
+                st.markdown(f"""
+                <div class="session-item">
+                <b>{item['model']}</b> — <span style="color:{color};font-weight:700;">{item['result']}</span>
+                ({item['confidence']:.1f}%) — {item['time']}
+                </div>
+                """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with hero_col:
+        img_b64 = get_image_base64("doctor.jpg")
+        st.markdown('<div class="hero-panel">', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="hero-quote">Early <span class="hero-quote-highlight">detection</span> saves lives</div>',
+            unsafe_allow_html=True
+        )
+        st.markdown(
+            '<div class="hero-subtext">Timely screening and accurate diagnosis can make all the difference.</div>',
+            unsafe_allow_html=True
+        )
+        if img_b64:
+            st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="hero-img">', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="hero-icon-fallback">🩺</div>', unsafe_allow_html=True)
+            st.caption("Add a doctor.jpg file to your project folder to display a photo here")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
 # HISTOPATHOLOGY PAGE
